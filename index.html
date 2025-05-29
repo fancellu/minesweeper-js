@@ -6,28 +6,152 @@
     <title>Minesweeper</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <style>
+        /* CSS Variables for Theming */
+        :root {
+            --body-bg-start: #f0f0f0; /* Light theme body gradient start */
+            --body-bg-end: #e0e0e0;   /* Light theme body gradient end */
+            --game-container-bg: #d0d0d0;
+            --game-container-border: #a0a0a0;
+            --game-container-shadow: rgba(0, 0, 0, 0.2);
+            --board-bg: #c0c0c0;
+            --board-border: #909090;
+            --cell-bg: #e0e0e0;
+            --cell-border: #a0a0a0;
+            --cell-hover-bg: #d0d0d0;
+            --cell-text-color: #333333; /* For numbers */
+            --revealed-cell-border: #888888;
+            --revealed-empty-bg: #b0b0b0;
+            --mine-bg: #ff6b6b;
+            --mine-text-color: white;
+            --info-text-color: #333333;
+            --reset-button-bg: #ffcc80; /* Lighter Amber */
+            --reset-button-text-color: #212121;
+            --reset-button-hover-bg: #ffb74d; /* Original Amber */
+            --reset-button-shadow: rgba(0, 0, 0, 0.15);
+            --message-bg: rgba(50, 50, 50, 0.9);
+            --message-text-color: white;
+            --switch-bg: #ccc;
+            --switch-slider-bg: white;
+            --switch-slider-checked-bg: #7e57c2; /* Purple to match dark theme accents */
+            --theme-label-color: #333333;
+        }
+
+        body.dark-theme {
+            --body-bg-start: #4a148c; /* Original dark gradient start */
+            --body-bg-end: #1a237e;   /* Original dark gradient end */
+            --game-container-bg: #6a5acd; /* SlateBlue - a bit lighter than original for contrast */
+            --game-container-border: #483d8b; /* DarkSlateBlue */
+            --game-container-shadow: rgba(0, 0, 0, 0.4);
+            --board-bg: #7b68ee; /* MediumSlateBlue */
+            --board-border: #483d8b;
+            --cell-bg: #111111; /* DreamlessSleep */
+            --cell-border: #6a5acd;
+            --cell-hover-bg: #8a63d2;
+            --cell-text-color: #ffffff;
+            --revealed-cell-border: #6a5acd;
+            --revealed-empty-bg: #a394e0; /* Lighter purple for revealed empty */
+            --mine-bg: #f44336; /* Red (original) */
+            --mine-text-color: white;
+            --info-text-color: white;
+            --reset-button-bg: #ffb74d; /* Amber (original) */
+            --reset-button-text-color: #212121;
+            --reset-button-hover-bg: #f57c00; /* Darker Amber (original) */
+            --reset-button-shadow: rgba(0, 0, 0, 0.3);
+            --message-bg: rgba(0, 0, 0, 0.8); /* Original message bg */
+            --message-text-color: white;
+            --switch-bg: #555;
+            --switch-slider-bg: #ccc;
+            --switch-slider-checked-bg: #ffb74d; /* Amber to match dark theme accents */
+            --theme-label-color: #f0f0f0;
+        }
+
         body {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background-color: #f0f0f0;
             font-family: 'Press Start 2P', cursive;
             margin: 0;
-              background: linear-gradient(135deg, #4a148c, #1a237e);
+            background: linear-gradient(135deg, var(--body-bg-start), var(--body-bg-end));
+            transition: background 0.3s ease;
         }
+
+        /* Theme Switcher Styles */
+        .theme-switcher-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            z-index: 2000; /* Ensure it's above other elements */
+        }
+
+        .theme-switch-label {
+            margin-right: 10px;
+            font-size: 0.8em; /* Adjusted to fit 'Press Start 2P' better */
+            color: var(--theme-label-color);
+            transition: color 0.3s ease;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;  /* Slightly wider for this font */
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--switch-bg);
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: var(--switch-slider-bg);
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--switch-slider-checked-bg);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        /* End Theme Switcher Styles */
+
 
         #game-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            margin-top: 20px;
-             padding: 20px;
+            margin-top: 60px; /* Increased margin to avoid overlap with theme switcher */
+            padding: 20px;
             border-radius: 12px;
-            background-color: #b0bec5; /* Light Steel Blue */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-             border: 4px solid #7e57c2;
+            background-color: var(--game-container-bg);
+            box-shadow: 0 4px 8px var(--game-container-shadow);
+            border: 4px solid var(--game-container-border);
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         #board {
@@ -35,8 +159,9 @@
             grid-template-columns: repeat(9, 40px); /* 9x9 grid, 40px cells */
             grid-template-rows: repeat(9, 40px);
             margin-bottom: 20px;
-            border: 2px solid #5c6bc0;
-            background-color: #90caf9;
+            border: 2px solid var(--board-border);
+            background-color: var(--board-bg);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
         }
 
         .cell {
@@ -45,28 +170,30 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 2px solid #5c6bc0;
+            border: 2px solid var(--cell-border);
             cursor: pointer;
             font-size: 1.2em;
             user-select: none;
-            background-color: #e0e0e0; /* Light Gray */
+            background-color: var(--cell-bg);
+            color: var(--cell-text-color); /* For numbers */
+            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
         }
 
-      .cell:hover {
-        background-color: #b3e5fc;
-      }
+        .cell:hover {
+            background-color: var(--cell-hover-bg);
+        }
 
         .revealed {
-            border: 1px solid #5c6bc0;
+            border: 1px solid var(--revealed-cell-border);
         }
 
         .mine {
-            background-color: #f44336; /* Red */
-            color: white;
+            background-color: var(--mine-bg);
+            color: var(--mine-text-color);
         }
 
         .revealed-empty {
-            background-color: #b0bec5; /* Light Steel Blue */
+            background-color: var(--revealed-empty-bg);
         }
 
         #info {
@@ -74,8 +201,9 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
-            width: 200px;
-            color: white;
+            width: 200px; /* Consider making this more flexible or % based */
+            color: var(--info-text-color);
+            transition: color 0.3s ease;
         }
 
         #mines-left {
@@ -92,45 +220,67 @@
             cursor: pointer;
             border: none;
             border-radius: 8px;
-            background-color: #ffb74d; /* Amber */
-            color: #212121;
+            background-color: var(--reset-button-bg);
+            color: var(--reset-button-text-color);
             font-family: 'Press Start 2P', cursive;
-            transition: background-color 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 4px var(--reset-button-shadow);
         }
 
         #reset-button:hover {
-            background-color: #f57c00; /* Darker Amber */
+            background-color: var(--reset-button-hover-bg);
         }
 
         #message-container {
-            position: fixed; /* Fix the message container */
-            top: 20px;      /* Position it at the top */
-            left: 50%;     /* Center horizontally initially */
-            transform: translateX(-50%); /* Precise centering */
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--message-bg);
+            color: var(--message-text-color);
             padding: 15px 20px;
             border-radius: 8px;
             font-size: 1em;
-            z-index: 1000; /* Ensure message is above other elements */
-            transition: opacity 0.3s ease-in-out, top 0.3s ease-in-out; /* Add top transition */
-            white-space: nowrap; /* Prevent text wrapping */
+            z-index: 1000;
+            transition: opacity 0.3s ease-in-out, top 0.3s ease-in-out, background-color 0.3s ease, color 0.3s ease;
+            white-space: nowrap;
         }
 
         #message-container.show {
             opacity: 1;
-            top: 30px; /* Move it down when visible */
+            top: 30px;
         }
 
-         #message-container.hidden {
+        #message-container.hidden {
             opacity: 0;
             top: 20px;
         }
 
+        /* Cell number colors */
+        .cell.number-1 { color: #1e90ff; } /* DodgerBlue */
+        .cell.number-2 { color: #32cd32; } /* LimeGreen */
+        .cell.number-3 { color: #ff4500; } /* OrangeRed */
+        .cell.number-4 { color: #00008b; } /* DarkBlue */
+        .cell.number-5 { color: #8b0000; } /* DarkRed */
+        .cell.number-6 { color: #40e0d0; } /* Turquoise */
+        .cell.number-7 { color: #000000; } /* Black */
+        .cell.number-8 { color: #808080; } /* Gray */
+
+        /* Dark theme overrides for cell numbers if needed, or ensure --cell-text-color is sufficient */
+        body.dark-theme .cell.number-1 { color: #6495ed; } /* CornflowerBlue */
+        body.dark-theme .cell.number-2 { color: #90ee90; } /* LightGreen */
+        body.dark-theme .cell.number-3 { color: #ff6347; } /* Tomato */
+        body.dark-theme .cell.number-4 { color: #add8e6; } /* LightBlue */
+        body.dark-theme .cell.number-5 { color: #f08080; } /* LightCoral */
+        body.dark-theme .cell.number-6 { color: #afeeee; } /* PaleTurquoise */
+        body.dark-theme .cell.number-7 { color: #d3d3d3; } /* LightGray */
+        body.dark-theme .cell.number-8 { color: #a9a9a9; } /* DarkGray */
+
+
         @media (max-width: 600px) {
             #game-container {
                 width: 95%;
+                margin-top: 70px; /* Adjust for smaller screens if switcher is too close */
             }
             #board {
                 grid-template-columns: repeat(9, 30px);
@@ -141,7 +291,7 @@
                 height: 30px;
                 font-size: 0.9em;
             }
-             #info {
+            #info {
                 width: 95%;
                 justify-content: space-around;
             }
@@ -152,11 +302,41 @@
             #message-container {
                 font-size: 0.9em;
                 padding: 10px 15px;
+                width: auto; /* Allow it to size based on content */
+                max-width: 90%;
+            }
+            .theme-switcher-container {
+                top: 10px;
+                right: 10px;
+            }
+            .theme-switch-label {
+                font-size: 0.7em;
+            }
+            .switch {
+                width: 40px;
+                height: 20px;
+            }
+            .slider:before {
+                height: 14px;
+                width: 14px;
+                left: 3px;
+                bottom: 3px;
+            }
+            input:checked + .slider:before {
+                transform: translateX(20px);
             }
         }
     </style>
 </head>
 <body>
+    <div class="theme-switcher-container">
+        <span id="theme-mode-label" class="theme-switch-label">Light</span>
+        <label class="switch">
+            <input type="checkbox" id="theme-toggle-checkbox">
+            <span class="slider"></span>
+        </label>
+    </div>
+
     <div id="game-container">
         <div id="board"></div>
         <div id="info">
@@ -164,10 +344,53 @@
             <div id="score">Score: <span id="score-count">0</span></div>
         </div>
         <button id="reset-button">Restart</button>
-         <div id="message-container" class="hidden"></div>
+        <div id="message-container" class="hidden"></div>
     </div>
 
     <script>
+        // --- Theme Switcher Logic ---
+        const themeToggleCheckbox = document.getElementById('theme-toggle-checkbox');
+        const themeModeLabel = document.getElementById('theme-mode-label');
+        const currentDocumentBody = document.body;
+
+        function applySelectedTheme(selectedTheme) {
+            if (selectedTheme === 'dark') {
+                currentDocumentBody.classList.add('dark-theme');
+                themeToggleCheckbox.checked = true;
+                themeModeLabel.textContent = 'Dark';
+            } else {
+                currentDocumentBody.classList.remove('dark-theme');
+                themeToggleCheckbox.checked = false;
+                themeModeLabel.textContent = 'Light';
+            }
+        }
+
+        // Check local storage for saved theme
+        const previouslySavedTheme = localStorage.getItem('minesweeper-active-theme');
+        if (previouslySavedTheme) {
+            applySelectedTheme(previouslySavedTheme);
+        } else {
+            // Default to light theme or check system preference if you want
+            // For simplicity, defaulting to light here.
+            // const prefersDarkScheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            // applySelectedTheme(prefersDarkScheme ? 'dark' : 'light');
+            applySelectedTheme('light'); // Default to light
+        }
+
+        // Event listener for the toggle switch
+        themeToggleCheckbox.addEventListener('change', () => {
+            if (themeToggleCheckbox.checked) {
+                applySelectedTheme('dark');
+                localStorage.setItem('minesweeper-active-theme', 'dark');
+            } else {
+                applySelectedTheme('light');
+                localStorage.setItem('minesweeper-active-theme', 'light');
+            }
+        });
+        // --- End Theme Switcher Logic ---
+
+
+        // --- Original Minesweeper Game Logic (with minor adjustments for theming if needed) ---
         const gridSize = 9;
         const numMines = 10;
 
@@ -175,7 +398,7 @@
         let minesLeft = numMines;
         let score = 0;
         let gameOver = false;
-        let flagChances = 10;
+        // let flagChances = 10; // This variable was declared but not used in the original script. Removing for now.
 
         let boardElement = document.getElementById('board');
         let minesLeftCountElement = document.getElementById('mines-left-count');
@@ -183,23 +406,19 @@
         let resetButton = document.getElementById('reset-button');
         const messageContainer = document.getElementById('message-container');
 
-
         resetButton.addEventListener('click', createBoard);
 
         function createBoard() {
-            // Initialize the game board and game state
             board = [];
             minesLeft = numMines;
             score = 0;
             gameOver = false;
-            flagChances = numMines;
-            boardElement.innerHTML = ''; // Clear the board
+            // flagChances = numMines; // Reset if you re-add this feature
+            boardElement.innerHTML = '';
             minesLeftCountElement.textContent = minesLeft;
             scoreCountElement.textContent = score;
-            messageContainer.classList.add('hidden'); // Hide message container initially
+            messageContainer.classList.add('hidden');
 
-
-            // Create empty board array
             for (let i = 0; i < gridSize; i++) {
                 board[i] = [];
                 for (let j = 0; j < gridSize; j++) {
@@ -212,7 +431,6 @@
                 }
             }
 
-            // Place mines randomly
             let minesPlaced = 0;
             while (minesPlaced < numMines) {
                 let row = Math.floor(Math.random() * gridSize);
@@ -223,7 +441,6 @@
                 }
             }
 
-            // Calculate number of adjacent mines for each cell
             for (let i = 0; i < gridSize; i++) {
                 for (let j = 0; j < gridSize; j++) {
                     if (!board[i][j].isMine) {
@@ -232,133 +449,118 @@
                 }
             }
 
-            // Render the board in the UI
             for (let i = 0; i < gridSize; i++) {
                 for (let j = 0; j < gridSize; j++) {
-                    let cell = document.createElement('div');
-                    cell.classList.add('cell');
-                    cell.id = `cell-${i}-${j}`;
-                    cell.addEventListener('click', () => handleCellClick(i, j)); // Handle left click
-                    cell.addEventListener('contextmenu', (event) => {
-                        event.preventDefault(); // Prevent default context menu
-                        handleCellRightClick(i, j); // Handle right click
+                    let cellElement = document.createElement('div');
+                    cellElement.classList.add('cell');
+                    cellElement.id = `cell-${i}-${j}`;
+                    cellElement.addEventListener('click', () => handleCellClick(i, j));
+                    cellElement.addEventListener('contextmenu', (event) => {
+                        event.preventDefault();
+                        handleCellRightClick(i, j);
                     });
-                    boardElement.appendChild(cell);
+                    boardElement.appendChild(cellElement);
                 }
             }
             updateMinesLeftDisplay();
         }
 
-
         function handleCellClick(row, col) {
-            // Handle a click on a cell
-            if (gameOver || board[row][col].isRevealed) {
-                return; // Game over or cell already revealed
-            }
-
-            if (board[row][col].isFlagged) {
-                return; // Prevent revealing flagged cells
+            if (gameOver || board[row][col].isRevealed || board[row][col].isFlagged) {
+                return;
             }
 
             if (board[row][col].isMine) {
-                // Game over: Player hit a mine
                 gameOver = true;
-                for (let i = 0; i < gridSize; i++) {
-                    for (let j = 0; j < gridSize; j++) {
-                        if (board[i][j].isMine) {
-                            let cellElement = document.getElementById(`cell-${i}-${j}`);
-                            cellElement.classList.add('revealed', 'mine');
-                            cellElement.textContent = '💣'; // Show mine icon
-                        }
-                    }
-                }
-                revealAllMines(); //show all mines
-                showMessage('BANG!!!'); // Display game over message
+                revealAllMines();
+                showMessage('BANG!!!');
             } else {
-                // Reveal the cell and check for win
                 revealCell(row, col);
-
                 let cellsRevealed = 0;
-                for (let i = 0; i < gridSize; i++) {
-                    for (let j = 0; j < gridSize; j++) {
-                        if (board[i][j].isRevealed && !board[i][j].isMine) {
+                for (let r = 0; r < gridSize; r++) {
+                    for (let c = 0; c < gridSize; c++) {
+                        if (board[r][c].isRevealed && !board[r][c].isMine) {
                             cellsRevealed++;
                         }
                     }
                 }
                 if (cellsRevealed === gridSize * gridSize - numMines) {
-                    // All non-mine cells revealed: Player wins
                     gameOver = true;
-                    showMessage('You won!!'); // Display win message
+                    showMessage('You won!!');
+                    // Optionally, flag all remaining mines as a visual cue
+                    for (let r_idx = 0; r_idx < gridSize; r_idx++) {
+                        for (let c_idx = 0; c_idx < gridSize; c_idx++) {
+                            if (board[r_idx][c_idx].isMine && !board[r_idx][c_idx].isFlagged) {
+                                board[r_idx][c_idx].isFlagged = true;
+                                document.getElementById(`cell-${r_idx}-${c_idx}`).textContent = '🚩';
+                            }
+                        }
+                    }
+                    updateMinesLeftDisplay(); // Update mines left if auto-flagging
                 }
             }
         }
 
         function handleCellRightClick(row, col) {
-            // Handle a right click on a cell (flag/unflag)
             if (gameOver || board[row][col].isRevealed) {
-                return; // Game over or cell already revealed
+                return;
             }
 
+            let cellElement = document.getElementById(`cell-${row}-${col}`);
             if (board[row][col].isFlagged) {
-                // Unflag the cell
                 board[row][col].isFlagged = false;
-                let cellElement = document.getElementById(`cell-${row}-${col}`);
-                cellElement.textContent = ''; // Remove flag icon
+                cellElement.textContent = '';
                 minesLeft++;
             } else {
-                // Flag the cell
                 if (minesLeft > 0) {
                     board[row][col].isFlagged = true;
-                    let cellElement = document.getElementById(`cell-${row}-${col}`);
-                    cellElement.textContent = '🚩'; // Display flag icon
+                    cellElement.textContent = '🚩';
                     minesLeft--;
+                } else {
+                    showMessage("No flags left!"); // Inform user if no flags are available
                 }
             }
             updateMinesLeftDisplay();
         }
 
         function revealCell(row, col) {
-            // Recursively reveal a cell and adjacent cells if no adjacent mines
             if (row < 0 || row >= gridSize || col < 0 || col >= gridSize || board[row][col].isRevealed) {
-                return; // Out of bounds or already revealed
+                return;
             }
 
             board[row][col].isRevealed = true;
             let cellElement = document.getElementById(`cell-${row}-${col}`);
+            cellElement.classList.add('revealed');
 
-            if (board[row][col].isMine) {
-                cellElement.classList.add('revealed', 'mine');
+            if (board[row][col].isMine) { // Should not happen if called from non-mine cell
+                cellElement.classList.add('mine');
                 cellElement.textContent = '💣';
                 return;
             }
 
-            cellElement.classList.add('revealed');
-
             if (board[row][col].adjacentMines > 0) {
                 cellElement.textContent = board[row][col].adjacentMines;
+                // Add number class for specific styling
+                cellElement.classList.add(`number-${board[row][col].adjacentMines}`);
                 score += 10;
-                scoreCountElement.textContent = score;
-                return;
+            } else {
+                cellElement.classList.add('revealed-empty');
+                score += 5; // Score for revealing an empty cell
+
+                // Recursively reveal adjacent cells only if current cell is empty (0 adjacent mines)
+                revealCell(row - 1, col - 1);
+                revealCell(row - 1, col);
+                revealCell(row - 1, col + 1);
+                revealCell(row, col - 1);
+                revealCell(row, col + 1);
+                revealCell(row + 1, col - 1);
+                revealCell(row + 1, col);
+                revealCell(row + 1, col + 1);
             }
-
-            cellElement.classList.add('revealed-empty');
-            score += 5;
             scoreCountElement.textContent = score;
-
-            // Recursively reveal adjacent cells
-            revealCell(row - 1, col - 1);
-            revealCell(row - 1, col);
-            revealCell(row - 1, col + 1);
-            revealCell(row, col - 1);
-            revealCell(row, col + 1);
-            revealCell(row + 1, col - 1);
-            revealCell(row + 1, col);
-            revealCell(row + 1, col + 1);
         }
 
         function countAdjacentMines(row, col) {
-            // Count the number of mines adjacent to a cell
             let count = 0;
             for (let i = row - 1; i <= row + 1; i++) {
                 for (let j = col - 1; j <= col + 1; j++) {
@@ -371,36 +573,32 @@
         }
 
         function updateMinesLeftDisplay() {
-            // Update the display of mines left
             minesLeftCountElement.textContent = minesLeft;
         }
 
         function revealAllMines() {
-            // Reveal all mines (used when game is over)
             for (let i = 0; i < gridSize; i++) {
                 for (let j = 0; j < gridSize; j++) {
                     if (board[i][j].isMine) {
-                         let cellElement = document.getElementById(`cell-${i}-${j}`);
-                         cellElement.classList.add('revealed', 'mine');
-                         cellElement.textContent = '💣';
+                        let cellElement = document.getElementById(`cell-${i}-${j}`);
+                        cellElement.classList.add('revealed', 'mine');
+                        cellElement.textContent = '💣';
                     }
                 }
             }
-            updateMinesLeftDisplay();
         }
 
         function showMessage(message) {
-            // Display a message to the player
             messageContainer.textContent = message;
             messageContainer.classList.remove('hidden');
-             // Clear the message after 3 seconds
+            messageContainer.classList.add('show'); // Ensure show class is added
             setTimeout(() => {
+                messageContainer.classList.remove('show');
                 messageContainer.classList.add('hidden');
             }, 3000);
         }
 
-        createBoard(); // Initialize the game when the page loads
-
+        createBoard(); // Initialize
     </script>
 </body>
 </html>
